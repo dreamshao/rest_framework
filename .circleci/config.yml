@@ -3,35 +3,38 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDAUDMipCJhuAh9NbwI+yGGMVH0MsJCnxDk3BrVTRPh
 version: 2
 jobs:
   build:
-   docker:
-    # specify the version you desire here
+    docker:
     - image: circleci/python:3.6.1
-   working_directory: ~/rest_framework
-   steps:
-     - checkout
-     # Download and cache dependencies
-     - restore_cache:
-         keys:
-         - v1-dependencies-{{ checksum "pollsapi/requirements.txt" }}
-         # fallback to using the latest cache if no exact match is found
-         - v1-dependencies-
-     - run:
-         name: install dependencies
-         command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r pollsapi/requirements.txt
+    # 必要时可以在这里指定依赖镜像
+    # - image: circleci/mysql:9.4
 
-     - save_cache:
+    working_directory: ~/repo
+
+    steps:
+    - checkout
+    - restore_cache:
+        keys:
+          - v1-dependencies-{{ checksum "pollsapi/requirements.txt" }}
+          - v1-dependencies-
+
+    # 运行单元测试
+    - run:
+        name:install dependencies
+        command: |
+          python3 -m venv venv
+          . venv/bin/activate
+          pip install -r pollsapi/requirements.txt
+    - save_cache:
          paths:
            - ./venv
          key: v1-dependencies-{{ checksum "requirements.txt" }}
-     - run:
-         name: run tests
-         command: |
-           . venv/bin/activate
-           cd pollsapi
-           python manage.py test
+    
+    - run:
+       name: run tests
+       command: |
+         . venv/bin/activate
+         cd pollsapi
+         python manage.py test
      - store_artifacts:
-         path: test-reports
-         destination: test-reports
+         - path: test-reports
+           destination: test-reports
