@@ -1,14 +1,12 @@
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDAUDMipCJhuAh9NbwI+yGGMVH0MsJCnxDk3BrVTRPh5cMscJXzJZuutzWO8kezZSMIBHRggLhskQPp0uvI3U9mL7qOges8CIXKsl5GIUHAMMc3nvlP1BDvuYQCWQoMVz67JhjUVxOGsTpJGtQn5srsTq5LqLAbuA41NWVnW24Dv9RjGcekeN1MtnZALcPZo1TcIEGaoLufjJ6F0/mfQWE2r1SxjM+YgKmhgmE2g8CAbkReVkfyME2CGn+S9SGFMr5gIhm/fBxI+Ssdc5AtolDPPbsoyEu0HuezBc8/yJ+kyyve1UGjysKk9RMzLq9XoXOOWG4Lcqaz1xxldcKkwLJsPFCm7floAokgN/4rn6g5aj5slu7EJ7Nis/tSx7KXTlfWbZFnqbVm7vSBhl+muz8jXipy+7HpYu1WjYfy9GaTebePqCNtNvtDpLOih12XrXl56Lsyjz9b9B9KeYmhmatXDhC9qSkK+2mW3aTrNpJY/zgAPVCEZwj8UgNRqNJ7d5M= dreamshao
 
-version:2
+version: 2
 jobs:
   build:
    docker:
     # specify the version you desire here
     - image: circleci/python:3.6.1
-	
-	
-   working_directory:~/rest_framework
+   working_directory: ~/rest_framework
    steps:
      - checkout
      # Download and cache dependencies
@@ -18,16 +16,16 @@ jobs:
          # fallback to using the latest cache if no exact match is found
          - v1-dependencies-
      - run:
-         name:install dependencies
-         command:|
+         name: install dependencies
+         command: |
             python3 -m venv venv
             . venv/bin/activate
             pip install -r pollsapi/requirements.txt
-			
+
      - save_cache:
          paths:
            - ./venv
-         key:v1-dependencies-{{ checksum "requirements.txt" }}
+         key: v1-dependencies-{{ checksum "requirements.txt" }}
      - run:
          name: run tests
          command: |
@@ -36,4 +34,4 @@ jobs:
            python manage.py test
      - store_artifacts:
          path: test-reports
-         destination:test-reports
+         destination: test-reports
