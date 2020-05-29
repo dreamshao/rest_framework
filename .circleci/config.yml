@@ -1,40 +1,58 @@
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDAUDMipCJhuAh9NbwI+yGGMVH0MsJCnxDk3BrVTRPh5cMscJXzJZuutzWO8kezZSMIBHRggLhskQPp0uvI3U9mL7qOges8CIXKsl5GIUHAMMc3nvlP1BDvuYQCWQoMVz67JhjUVxOGsTpJGtQn5srsTq5LqLAbuA41NWVnW24Dv9RjGcekeN1MtnZALcPZo1TcIEGaoLufjJ6F0/mfQWE2r1SxjM+YgKmhgmE2g8CAbkReVkfyME2CGn+S9SGFMr5gIhm/fBxI+Ssdc5AtolDPPbsoyEu0HuezBc8/yJ+kyyve1UGjysKk9RMzLq9XoXOOWG4Lcqaz1xxldcKkwLJsPFCm7floAokgN/4rn6g5aj5slu7EJ7Nis/tSx7KXTlfWbZFnqbVm7vSBhl+muz8jXipy+7HpYu1WjYfy9GaTebePqCNtNvtDpLOih12XrXl56Lsyjz9b9B9KeYmhmatXDhC9qSkK+2mW3aTrNpJY/zgAPVCEZwj8UgNRqNJ7d5M= dreamshao
-
-version:2
+version: 2
 jobs:
   build:
     docker:
-    - image: circleci/python:3.6.1
-    # 必要时可以在这里指定依赖镜像
-    # - image: circleci/mysql:9.4
-
-    working_directory: ~/repo
-
+      - image: felicianotech/docker-hugo:0.27.1
+    working_directory: ~/project
     steps:
-    - checkout
-    - restore_cache:
-        keys:
-          - v1-dependencies-{{ checksum "pollsapi/requirements.txt" }}
-          - v1-dependencies-
-
-    # 运行单元测试
-    - run:
-        name:install dependencies
-        command: |
-          python3 -m venv venv
-          . venv/bin/activate
-          pip install -r pollsapi/requirements.txt
-    - save_cache:
-         paths:
-           - ./venv
-         key: v1-dependencies-{{ checksum "requirements.txt" }}
-    
-    - run:
-       name: run tests
-       command: |
-         . venv/bin/activate
-         cd pollsapi
-         python manage.py test
-     - store_artifacts:
-         - path: test-reports
-           destination: test-reports
+      - checkout
+      - run:
+          name: "Build Our Statically Generated Docs Website with Hugo"
+          command: HUGO_ENV=production hugo -v -s src/
+      - persist_to_workspace:
+          root: /root/project
+          paths:src/public/
+  html-testing:
+    docker:
+      - image: felicianotech/docker-hugo:0.27.1
+    working_directory: ~/project
+    steps:
+      - attach_workspace:
+          at: /root/project
+      - run:
+          name: "Test With HTML Proofer"
+          command: echo "This is where we'd do testing with HTML Proofer."
+  ui-testing:
+    docker:
+      - image: felicianotech/docker-hugo:0.27.1
+    working_directory: ~/project
+    steps:
+      - attach_workspace:
+          at: /root/project
+      - run:
+          name: "Test With Selenium or Behat"
+          command: echo "This is where we'd run a headless browser and test our site's UI."
+  process-testing:
+    docker:
+      - image: felicianotech/docker-hugo:0.27.1
+    working_directory: ~/project
+    steps:
+      - attach_workspace:
+          at: /root/project
+      - run:
+          name: "Test the commit for org or team processes"
+          command: |
+            echo "This is where we'd test this commit for things our project wants to enforce"
+            echo " such as code formatting, the signing of a CLA, security requirements, etc."
+  deploy:
+    docker:
+      - image: felicianotech/docker-hugo:0.27.1
+    working_directory: ~/project
+    steps:
+      - attach_workspace:
+          at: /root/project
+      - run:
+          name: "Deploy Our Docs Site"
+          command: echo "This is where we'd deploy using rsync, awscli, etc."
+# Below would be the Workflows specifc config, which we're leaving off for brevity (this example as already lengthy.
